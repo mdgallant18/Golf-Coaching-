@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
   }
 
   const data = await response.json()
-  const rawText: string = data.content?.[0]?.text ?? '{}'
+  const rawText: string = data.content?.[0]?.text ?? ''
   const cleaned = rawText.trim().replace(/^```(json)?/, '').replace(/```$/, '').trim()
 
   let summary = ''
@@ -127,6 +127,14 @@ Deno.serve(async (req) => {
   } catch {
     recap = cleaned
     summary = cleaned.slice(0, 80)
+  }
+
+  if (!recap) {
+    console.error('Empty recap from Anthropic response:', JSON.stringify(data).slice(0, 2000))
+    return new Response(
+      JSON.stringify({ error: 'Anthropic returned an empty or unparseable response' }),
+      { status: 502, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+    )
   }
 
   return new Response(JSON.stringify({ summary, recap }), {
