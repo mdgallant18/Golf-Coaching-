@@ -38,8 +38,9 @@ export function RoundSessionFlow() {
   const { profile } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep] = useState(0) // 0..7 questions, 8 = wrap-up
+  const [step, setStep] = useState(0) // 0..5 questions, 6 = wrap-up
   const [answers, setAnswers] = useState<Record<string, number>>({})
+  const [notes, setNotes] = useState<Record<string, string>>({})
   const [wrapUp, setWrapUp] = useState<WrapUp>(EMPTY_WRAPUP)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,12 +48,8 @@ export function RoundSessionFlow() {
 
   const totalSteps = ROUND_QUESTIONS.length + 1
   const isWrapUpStep = step === ROUND_QUESTIONS.length
-
-  const handleSelect = (index: number) => {
-    const question = ROUND_QUESTIONS[step]
-    setAnswers((prev) => ({ ...prev, [question.id]: index }))
-    setTimeout(() => setStep((s) => s + 1), 150)
-  }
+  const currentQuestion = ROUND_QUESTIONS[step]
+  const canAdvance = !isWrapUpStep && answers[currentQuestion?.id] !== undefined
 
   const handleSubmit = async () => {
     if (!profile) return
@@ -60,11 +57,16 @@ export function RoundSessionFlow() {
     setError(null)
     try {
       const bucket = bucketFromRoundAnswers(answers)
-      const answerLabels = Object.fromEntries(
-        ROUND_QUESTIONS.map((q) => [q.id, q.options[answers[q.id]]?.label]).filter(([, v]) => v),
+      const answerDetails = Object.fromEntries(
+        ROUND_QUESTIONS.map((q) => {
+          const label = q.options[answers[q.id]]?.label
+          if (!label) return [q.id, undefined]
+          const note = notes[q.id]?.trim()
+          return [q.id, note ? { answer: label, note } : { answer: label }]
+        }).filter(([, v]) => v),
       )
       const payload = {
-        questions: answerLabels,
+        questions: answerDetails,
         ...wrapUp,
       }
       const session = await submitSession({
@@ -98,12 +100,25 @@ export function RoundSessionFlow() {
       <ProgressBar current={step + 1} total={totalSteps} />
 
       {!isWrapUpStep && (
-        <QuestionCard
-          prompt={ROUND_QUESTIONS[step].prompt}
-          options={ROUND_QUESTIONS[step].options}
-          selectedIndex={answers[ROUND_QUESTIONS[step].id]}
-          onSelect={handleSelect}
-        />
+        <>
+          <QuestionCard
+            prompt={currentQuestion.prompt}
+            options={currentQuestion.options}
+            selectedIndex={answers[currentQuestion.id]}
+            onSelect={(index) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: index }))}
+            note={notes[currentQuestion.id] ?? ''}
+            onNoteChange={(note) => setNotes((prev) => ({ ...prev, [currentQuestion.id]: note }))}
+          />
+          <button
+            type="button"
+            className="primary-button"
+            style={{ marginTop: 24 }}
+            disabled={!canAdvance}
+            onClick={() => setStep((s) => s + 1)}
+          >
+            Next
+          </button>
+        </>
       )}
 
       {isWrapUpStep && (
