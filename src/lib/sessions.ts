@@ -1,5 +1,18 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import type { Bucket, SessionRecord, SessionType } from '../types/domain'
+
+async function describeFunctionsError(error: unknown): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const body = await error.context.json()
+      if (body?.error) return body.detail ? `${body.error}: ${body.detail}` : body.error
+    } catch {
+      // fall through to generic message below
+    }
+  }
+  return error instanceof Error ? error.message : 'Could not generate your recap.'
+}
 
 interface SubmitSessionInput {
   playerId: string
@@ -19,7 +32,7 @@ export async function submitSession({
   const { data: recapData, error: recapError } = await supabase.functions.invoke('generate-recap', {
     body: { playerName, sessionType, bucket, answers },
   })
-  if (recapError) throw recapError
+  if (recapError) throw new Error(await describeFunctionsError(recapError))
 
   const summary: string = recapData?.summary || 'Session logged'
   const recap: string = recapData?.recap || ''
