@@ -1,0 +1,4 @@
+project_id = "eqyzjietkowbxvyxyuzs"
+
+[functions.generate-recap]
+verify_jwt = true
