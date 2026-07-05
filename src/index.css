@@ -204,3 +204,304 @@ textarea {
   border-radius: var(--radius);
   padding: 24px;
 }
+
+/* --- Session type picker ---------------------------------------------- */
+
+.session-type-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.session-type-card {
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.session-type-card:hover {
+  border-color: var(--color-primary);
+}
+
+.session-type-card h2 {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+
+.session-type-card p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* --- Progress bar -------------------------------------------------------- */
+
+.progress-bar {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.2s ease;
+}
+
+/* --- Question card ------------------------------------------------------- */
+
+.question-card h2 {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-button {
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.option-button:hover {
+  border-color: var(--color-primary);
+}
+
+.option-button.selected {
+  border-color: var(--color-primary);
+  background: rgba(27, 67, 50, 0.08);
+  font-weight: 600;
+}
+
+/* --- Multi-select chips --------------------------------------------------- */
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.chip.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* --- Rating scale ---------------------------------------------------------- */
+
+.rating-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-scale > label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.rating-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rating-option {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1 1 auto;
+}
+
+.rating-option.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* --- Wrap-up / generic form ------------------------------------------------- */
+
+.wrapup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wrapup-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.wrapup-form textarea,
+.wrapup-form input[type='text'],
+.wrapup-form select {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  font-weight: 400;
+  background: var(--color-surface);
+  resize: vertical;
+}
+
+/* --- Drill rows -------------------------------------------------------------- */
+
+.drill-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--color-surface);
+}
+
+.drill-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drill-row-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* --- Recap result -------------------------------------------------------------- */
+
+.recap-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.recap-card p {
+  color: var(--color-ink);
+}
+
+.recap-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Session list -------------------------------------------------------------- */
+
+.session-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-list-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.session-list-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.bucket-tag {
+  background: rgba(224, 164, 88, 0.2);
+  color: #8a5a1e;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.session-date {
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+
+.session-type-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.session-summary {
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+/* --- Coach roster -------------------------------------------------------------- */
+
+.roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.roster-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.roster-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.roster-item-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}

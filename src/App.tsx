@@ -6,6 +6,11 @@ import { SignupPage } from './pages/SignupPage'
 import { CompleteProfilePage } from './pages/CompleteProfilePage'
 import { PlayerHomePage } from './pages/PlayerHomePage'
 import { CoachHomePage } from './pages/CoachHomePage'
+import { NewSessionPage } from './pages/session/NewSessionPage'
+import { RoundSessionFlow } from './pages/session/RoundSessionFlow'
+import { TechnicalPracticeFlow } from './pages/session/TechnicalPracticeFlow'
+import { PerformancePracticeChoice } from './pages/session/PerformancePracticeChoice'
+import { DrillLoggerFlow } from './pages/session/DrillLoggerFlow'
 
 function RootRedirect() {
   const { session, profile, loading } = useAuth()
@@ -42,6 +47,46 @@ function AppRoutes() {
         element={
           <RequireProfile role="coach">
             <CoachHomePage />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/player/new"
+        element={
+          <RequireProfile role="player">
+            <NewSessionPage />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/player/new/round/:sessionType"
+        element={
+          <RequireProfile role="player">
+            <RoundSessionFlow />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/player/new/technical"
+        element={
+          <RequireProfile role="player">
+            <TechnicalPracticeFlow />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/player/new/performance"
+        element={
+          <RequireProfile role="player">
+            <PerformancePracticeChoice />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/player/new/drills"
+        element={
+          <RequireProfile role="player">
+            <DrillLoggerFlow />
           </RequireProfile>
         }
       />

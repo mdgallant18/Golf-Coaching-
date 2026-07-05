@@ -33,7 +33,10 @@ Structure every recap in this exact order, as flowing prose (not bullet points),
 3. The single biggest leak. Name ONE thing holding them back — it might be mental (mindset, commitment, patience) rather than mechanical. Do not list multiple weaknesses; pick the one that matters most right now.
 4. A concrete next practice focus. One clear, actionable thing to work on before the next time out. Make it specific enough they could start on it today.
 
-Keep the whole recap under 220 words. Address the player directly ("you"). Never use the words "grade," "score," or "rating" when talking about their performance as a person — those are for the scorecard, not for them.`
+Keep the whole recap under 220 words. Address the player directly ("you"). Never use the words "grade," "score," or "rating" when talking about their performance as a person — those are for the scorecard, not for them.
+
+Respond with ONLY a JSON object, no markdown fences, no other text, in exactly this shape:
+{"summary": "one punchy line (under 15 words) capturing today's headline", "recap": "the full recap as described above"}`
 
 interface RecapRequest {
   playerName?: string
@@ -97,7 +100,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 600,
+      max_tokens: 700,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -112,9 +115,21 @@ Deno.serve(async (req) => {
   }
 
   const data = await response.json()
-  const recap = data.content?.[0]?.text ?? ''
+  const rawText: string = data.content?.[0]?.text ?? '{}'
+  const cleaned = rawText.trim().replace(/^```(json)?/, '').replace(/```$/, '').trim()
 
-  return new Response(JSON.stringify({ recap }), {
+  let summary = ''
+  let recap = ''
+  try {
+    const parsed = JSON.parse(cleaned)
+    summary = parsed.summary ?? ''
+    recap = parsed.recap ?? ''
+  } catch {
+    recap = cleaned
+    summary = cleaned.slice(0, 80)
+  }
+
+  return new Response(JSON.stringify({ summary, recap }), {
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
   })
 })
