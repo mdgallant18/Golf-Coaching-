@@ -1,4 +1,5 @@
 // Supabase Edge Function: generate-recap
+// (touched to force a GitHub-integration redeploy)
 //
 // Called from the client via `supabase.functions.invoke('generate-recap', ...)`
 // once a player finishes logging a session. Runs server-side so the Anthropic
