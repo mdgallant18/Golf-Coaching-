@@ -168,6 +168,24 @@ export async function generateGameReport(
   return { summary: data?.summary || '', report: data?.recap || '' }
 }
 
+export async function generateCoachSessionReport(
+  session: SessionRecord,
+  playerName: string,
+): Promise<{ summary: string; report: string }> {
+  const { data, error } = await supabase.functions.invoke('floridian-recap', {
+    body: {
+      mode: 'coach_session',
+      playerName,
+      sessionType: session.session_type,
+      bucket: session.bucket,
+      answers: session.answers,
+    },
+  })
+  if (error) throw new Error(await describeFunctionsError(error))
+
+  return { summary: data?.summary || '', report: data?.recap || '' }
+}
+
 export async function fetchProfileName(playerId: string): Promise<string> {
   const { data, error } = await supabase
     .from('profiles')

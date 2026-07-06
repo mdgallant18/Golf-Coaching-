@@ -123,6 +123,41 @@ interface GameReportRequest {
   }[]
 }
 
+// The coach's-take voice: same headed/bold document style as the game
+// report, but scoped to a single already-logged session rather than a
+// trend across many. The player-facing recap for this same session is
+// untouched — this is a separate, on-demand, coach-only read.
+const COACH_SESSION_SYSTEM_PROMPT = `You are Matt Gallant, writing your own coach's take on a single session a player just logged — a deeper, more analytical read than the quick player-facing recap, for your own use (or to share with a parent), not something read aloud to the player.
+
+Refer to the player by name, in the third person, throughout. Ground everything in the actual session data you're given — the questions/answers, bucket, theme tags, and any stats. Never invent a number or pattern that isn't there.
+
+Format in this exact markdown structure — "## " before each section header, one blank line between sections, flowing prose (no bullet lists), and use **bold** around the single most important phrase in a section (at most one bolded span per section):
+
+## Session Assessment
+1 paragraph: the real headline of this session — bold the single biggest takeaway.
+
+## What The Data Shows
+1-2 paragraphs: the specifics behind that headline — cite the actual answers, bucket/theme tags, and stats you were given. This is the most detailed section.
+
+## The Real Opportunity
+1 paragraph: the one thing to prioritize next — specific and actionable. Bold the core instruction.
+
+## Coach's Note
+1 paragraph: your bottom-line read, evidence-based, in your own philosophy.
+
+Never use the words "grade," "score," or "rating" when talking about them as a person.
+
+Respond with ONLY a JSON object, no markdown fences around the JSON itself, no other text, in exactly this shape:
+{"summary": "one-line headline of this session, coach's-eye view", "recap": "the full markdown-formatted report as described above"}`
+
+interface CoachSessionRequest {
+  mode: 'coach_session'
+  playerName: string
+  sessionType: string
+  bucket: string
+  answers: Record<string, unknown>
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS })
@@ -142,7 +177,7 @@ Deno.serve(async (req) => {
     })
   }
 
-  let rawBody: RecapRequest | GameReportRequest
+  let rawBody: RecapRequest | GameReportRequest | CoachSessionRequest
   try {
     rawBody = await req.json()
   } catch {
@@ -170,6 +205,24 @@ Deno.serve(async (req) => {
       JSON.stringify(body.sessions, null, 2),
       '',
       'Write the game report now, following the structure exactly.',
+    ].join('\n')
+  } else if ('mode' in rawBody && rawBody.mode === 'coach_session') {
+    const body = rawBody as CoachSessionRequest
+    if (!body.playerName || !body.sessionType || !body.bucket || !body.answers) {
+      return new Response(
+        JSON.stringify({ error: 'playerName, sessionType, bucket, and answers are required for a coach session report' }),
+        { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+      )
+    }
+    system = COACH_SESSION_SYSTEM_PROMPT
+    userMessage = [
+      `Player: ${body.playerName}`,
+      `Session type: ${body.sessionType}`,
+      `Primary bucket: ${body.bucket}`,
+      'Raw answers (JSON):',
+      JSON.stringify(body.answers, null, 2),
+      '',
+      "Write the coach's take now, following the structure exactly.",
     ].join('\n')
   } else {
     const body = rawBody as RecapRequest
