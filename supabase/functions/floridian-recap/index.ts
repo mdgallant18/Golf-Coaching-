@@ -320,7 +320,11 @@ Deno.serve(async (req) => {
   // find the text block rather than assuming it's content[0].
   const textBlock = data.content?.find((block: { type: string }) => block.type === 'text')
   const rawText: string = textBlock?.text ?? ''
-  const cleaned = rawText.trim().replace(/^```(json)?/, '').replace(/```$/, '').trim()
+  const cleaned = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim()
 
   // Unescape the basic JSON string escapes we care about for prose text.
   const unescapeJsonString = (s: string) =>
