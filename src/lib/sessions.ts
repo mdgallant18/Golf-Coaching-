@@ -39,7 +39,7 @@ export async function submitSession({
   bucket,
   answers,
 }: SubmitSessionInput): Promise<SessionRecord> {
-  const { data: recapData, error: recapError } = await supabase.functions.invoke('clever-function', {
+  const { data: recapData, error: recapError } = await supabase.functions.invoke('floridian-recap', {
     body: { playerName, sessionType, bucket, answers },
   })
   if (recapError) throw new Error(await describeFunctionsError(recapError))
