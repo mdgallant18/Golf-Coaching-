@@ -10,6 +10,7 @@ export function TechnicalPracticeFlow() {
   const { profile } = useAuth()
   const navigate = useNavigate()
 
+  const [why, setWhy] = useState('')
   const [areas, setAreas] = useState<string[]>([])
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -33,7 +34,7 @@ export function TechnicalPracticeFlow() {
         playerName: profile.full_name,
         sessionType: 'technical_practice',
         bucket,
-        answers: { areas, description },
+        answers: { why, areas, description },
       })
       setResult({ summary: session.summary, recap: session.recap })
     } catch (err) {
@@ -57,6 +58,16 @@ export function TechnicalPracticeFlow() {
       </header>
 
       <div className="wrapup-form">
+        <label>
+          Why are you working on this?
+          <textarea
+            rows={2}
+            placeholder="e.g. missed too many greens last round because of inconsistent wedge distances"
+            value={why}
+            onChange={(e) => setWhy(e.target.value)}
+          />
+        </label>
+
         <label>
           Areas worked on
           <MultiSelectChips options={PRACTICE_AREAS} selected={areas} onToggle={toggleArea} />
