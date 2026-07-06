@@ -1,4 +1,4 @@
 project_id = "eqyzjietkowbxvyxyuzs"
 
-[functions.floridian-recap]
+[functions.clever-function]
 verify_jwt = true
