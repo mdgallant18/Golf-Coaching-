@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 800,
+      max_tokens: 1500,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -134,6 +134,10 @@ Deno.serve(async (req) => {
   const rawText: string = textBlock?.text ?? ''
   const cleaned = rawText.trim().replace(/^```(json)?/, '').replace(/```$/, '').trim()
 
+  // Unescape the basic JSON string escapes we care about for prose text.
+  const unescapeJsonString = (s: string) =>
+    s.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+
   let summary = ''
   let recap = ''
   try {
@@ -141,8 +145,18 @@ Deno.serve(async (req) => {
     summary = parsed.summary ?? ''
     recap = parsed.recap ?? ''
   } catch {
-    recap = cleaned
-    summary = cleaned.slice(0, 80)
+    // The response may have been cut off mid-string (hit the token limit)
+    // before the JSON closed. Recover whatever prose we can instead of
+    // showing the player raw, truncated JSON syntax.
+    const summaryMatch = cleaned.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/)
+    const recapMatch = cleaned.match(/"recap"\s*:\s*"((?:[^"\\]|\\.)*)/)
+    if (recapMatch) {
+      recap = unescapeJsonString(recapMatch[1])
+      summary = summaryMatch ? unescapeJsonString(summaryMatch[1]) : recap.slice(0, 80)
+    } else {
+      recap = cleaned
+      summary = cleaned.slice(0, 80)
+    }
   }
 
   if (!recap) {
