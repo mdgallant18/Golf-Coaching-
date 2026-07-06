@@ -78,6 +78,35 @@ interface RecapRequest {
   recentHistory?: RecentHistoryEntry[]
 }
 
+// The game-report voice: Matt's own analytical notes on a player, not
+// something read aloud to them — third person, evidence-first.
+const GAME_REPORT_SYSTEM_PROMPT = `You are Matt Gallant, reviewing a player's last several logged sessions to write yourself a coaching progress report — your own analytical notes on where they actually stand, not a message read aloud to them.
+
+Structure as flowing prose, 3-4 short paragraphs, no bullet points, no headers:
+1. The overall pattern. What's the throughline across these sessions — a theme, bucket, or trend that keeps showing up, for better or worse.
+2. Practice vs. transfer. Are they practicing productively, and is it actually showing up in round/tournament results? Call out any mismatch plainly — e.g. plenty of technical work but no competitive reps, or practice that isn't yet transferring to the course.
+3. Where they really stand right now. Your honest read, grounded in your own philosophy: evidence over positive thinking, commitment/decision-making over mechanics, competitive reps over more range balls.
+4. What you'd prioritize with them next, specifically.
+
+Refer to the player by name, in the third person, throughout — this is your own report, not a message to them. Ground everything in the actual session data you're given; never invent a pattern that isn't there. If there isn't much data yet (few sessions logged), say so plainly instead of overreaching.
+
+Never use the words "grade," "score," or "rating" when talking about them as a person.
+
+Respond with ONLY a JSON object, no markdown fences, no other text, in exactly this shape:
+{"summary": "one-line headline of where this player stands right now", "recap": "the full report as described above"}`
+
+interface GameReportRequest {
+  mode: 'game_report'
+  playerName: string
+  sessions: {
+    session_type: string
+    bucket: string
+    summary: string
+    recap: string
+    created_at: string
+  }[]
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS })
@@ -97,9 +126,9 @@ Deno.serve(async (req) => {
     })
   }
 
-  let body: RecapRequest
+  let rawBody: RecapRequest | GameReportRequest
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
       status: 400,
@@ -107,29 +136,51 @@ Deno.serve(async (req) => {
     })
   }
 
-  if (!body.sessionType || !body.bucket || !body.answers) {
-    return new Response(
-      JSON.stringify({ error: 'sessionType, bucket, and answers are required' }),
-      { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
-    )
-  }
+  let system: string
+  let userMessage: string
 
-  const userMessage = [
-    `Player: ${body.playerName ?? 'this player'}`,
-    `Session type: ${body.sessionType}`,
-    `Primary bucket: ${body.bucket}`,
-    'Raw answers (JSON):',
-    JSON.stringify(body.answers, null, 2),
-    '',
-    ...(body.recentHistory?.length
-      ? [
-          `Recent session history (most recent first, up to last ${body.recentHistory.length}):`,
-          JSON.stringify(body.recentHistory, null, 2),
-          '',
-        ]
-      : []),
-    'Write the recap now, following the Floridian Signature structure exactly.',
-  ].join('\n')
+  if ('mode' in rawBody && rawBody.mode === 'game_report') {
+    const body = rawBody as GameReportRequest
+    if (!body.playerName || !body.sessions) {
+      return new Response(
+        JSON.stringify({ error: 'playerName and sessions are required for a game report' }),
+        { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+      )
+    }
+    system = GAME_REPORT_SYSTEM_PROMPT
+    userMessage = [
+      `Player: ${body.playerName}`,
+      `Last ${body.sessions.length} logged sessions (most recent first):`,
+      JSON.stringify(body.sessions, null, 2),
+      '',
+      'Write the game report now, following the structure exactly.',
+    ].join('\n')
+  } else {
+    const body = rawBody as RecapRequest
+    if (!body.sessionType || !body.bucket || !body.answers) {
+      return new Response(
+        JSON.stringify({ error: 'sessionType, bucket, and answers are required' }),
+        { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+      )
+    }
+    system = SYSTEM_PROMPT
+    userMessage = [
+      `Player: ${body.playerName ?? 'this player'}`,
+      `Session type: ${body.sessionType}`,
+      `Primary bucket: ${body.bucket}`,
+      'Raw answers (JSON):',
+      JSON.stringify(body.answers, null, 2),
+      '',
+      ...(body.recentHistory?.length
+        ? [
+            `Recent session history (most recent first, up to last ${body.recentHistory.length}):`,
+            JSON.stringify(body.recentHistory, null, 2),
+            '',
+          ]
+        : []),
+      'Write the recap now, following the Floridian Signature structure exactly.',
+    ].join('\n')
+  }
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -141,7 +192,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
       max_tokens: 1500,
-      system: SYSTEM_PROMPT,
+      system,
       messages: [{ role: 'user', content: userMessage }],
     }),
   })

@@ -102,6 +102,30 @@ export async function fetchPlayerSessions(playerId: string): Promise<SessionReco
   return data
 }
 
+export async function generateGameReport(
+  playerId: string,
+  playerName: string,
+): Promise<{ summary: string; report: string }> {
+  const { data: sessions, error: sessionsError } = await supabase
+    .from('sessions')
+    .select('session_type, bucket, summary, recap, created_at')
+    .eq('player_id', playerId)
+    .order('created_at', { ascending: false })
+    .limit(RECENT_HISTORY_LIMIT)
+
+  if (sessionsError) throw sessionsError
+  if (!sessions || sessions.length === 0) {
+    throw new Error('No sessions logged yet for this player.')
+  }
+
+  const { data, error } = await supabase.functions.invoke('floridian-recap', {
+    body: { mode: 'game_report', playerName, sessions },
+  })
+  if (error) throw new Error(await describeFunctionsError(error))
+
+  return { summary: data?.summary || '', report: data?.recap || '' }
+}
+
 export async function fetchProfileName(playerId: string): Promise<string> {
   const { data, error } = await supabase
     .from('profiles')
