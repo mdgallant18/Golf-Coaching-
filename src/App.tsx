@@ -6,6 +6,7 @@ import { SignupPage } from './pages/SignupPage'
 import { CompleteProfilePage } from './pages/CompleteProfilePage'
 import { PlayerHomePage } from './pages/PlayerHomePage'
 import { CoachHomePage } from './pages/CoachHomePage'
+import { CoachPlayerSessionsPage } from './pages/CoachPlayerSessionsPage'
 import { SessionDetailPage } from './pages/SessionDetailPage'
 import { NewSessionPage } from './pages/session/NewSessionPage'
 import { RoundSessionFlow } from './pages/session/RoundSessionFlow'
@@ -48,6 +49,14 @@ function AppRoutes() {
         element={
           <RequireProfile role="coach">
             <CoachHomePage />
+          </RequireProfile>
+        }
+      />
+      <Route
+        path="/coach/players/:playerId"
+        element={
+          <RequireProfile role="coach">
+            <CoachPlayerSessionsPage />
           </RequireProfile>
         }
       />

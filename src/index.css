@@ -531,6 +531,13 @@ textarea {
   margin-bottom: 12px;
 }
 
+.roster-item-header-button {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .roster-item-header h2 {
   margin: 0;
   font-size: 1.1rem;

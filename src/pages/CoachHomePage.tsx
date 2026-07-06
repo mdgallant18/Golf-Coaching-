@@ -67,12 +67,16 @@ export function CoachHomePage() {
           const latest = playerSessions[0]
           return (
             <li key={player.id} className="roster-item">
-              <div className="roster-item-header">
+              <button
+                type="button"
+                className="roster-item-header roster-item-header-button"
+                onClick={() => navigate(`/coach/players/${player.id}`)}
+              >
                 <h2>{player.full_name}</h2>
                 <span className="session-date">
                   {playerSessions.length} session{playerSessions.length === 1 ? '' : 's'}
                 </span>
-              </div>
+              </button>
               {latest ? (
                 <button
                   type="button"

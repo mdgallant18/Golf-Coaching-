@@ -86,6 +86,17 @@ export async function fetchPlayerSessions(playerId: string): Promise<SessionReco
   return data
 }
 
+export async function fetchProfileName(playerId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', playerId)
+    .single()
+
+  if (error) throw error
+  return data.full_name
+}
+
 export async function fetchCoachRoster(coachId: string) {
   const { data: players, error: playersError } = await supabase
     .from('profiles')
