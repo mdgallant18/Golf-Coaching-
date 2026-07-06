@@ -105,6 +105,10 @@ export function CoachPlayerSessionsPage() {
     }
   }
 
+  const handleSaveAsPdf = () => {
+    window.print()
+  }
+
   return (
     <div className="app-screen">
       <button type="button" className="text-button" onClick={() => navigate('/coach')}>
@@ -156,12 +160,28 @@ export function CoachPlayerSessionsPage() {
       {reportError && <p className="form-error">{reportError}</p>}
 
       {report && (
-        <div className="recap-card" style={{ marginBottom: 24 }}>
-          <h2 style={{ marginTop: 0 }}>{report.summary}</h2>
+        <div className="recap-card report-document" style={{ marginBottom: 24 }}>
+          <div className="report-letterhead">
+            <p className="report-letterhead-brand">Golf Coaching — Player Progress Report</p>
+            <h2 className="report-letterhead-player">{playerName}</h2>
+            <p className="report-letterhead-meta">
+              Prepared by Matt Gallant · {new Date().toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          </div>
+          <h2 className="report-headline">{report.summary}</h2>
           {renderReportMarkdown(report.report)}
-          <button type="button" className="primary-button" style={{ marginTop: 16 }} onClick={handleShare}>
-            {shareCopied ? 'Copied!' : 'Share report'}
-          </button>
+          <div className="report-actions">
+            <button type="button" className="primary-button" onClick={handleSaveAsPdf}>
+              Save as PDF
+            </button>
+            <button type="button" className="secondary-button" onClick={handleShare}>
+              {shareCopied ? 'Copied!' : 'Quick share'}
+            </button>
+          </div>
         </div>
       )}
 
