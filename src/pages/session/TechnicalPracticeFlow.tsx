@@ -14,7 +14,8 @@ export function TechnicalPracticeFlow() {
   const [areas, setAreas] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [focusRating, setFocusRating] = useState<string>()
-  const [improvementRating, setImprovementRating] = useState<string>()
+  const [executionRating, setExecutionRating] = useState<string>()
+  const [processRating, setProcessRating] = useState<string>()
   const [nextFocus, setNextFocus] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +25,7 @@ export function TechnicalPracticeFlow() {
     setAreas((prev) => (prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]))
   }
 
-  const canSubmit = areas.length > 0 && !!focusRating && !!improvementRating
+  const canSubmit = areas.length > 0 && !!focusRating && !!executionRating && !!processRating
 
   const handleSubmit = async () => {
     if (!profile || !canSubmit) return
@@ -37,7 +38,7 @@ export function TechnicalPracticeFlow() {
         playerName: profile.full_name,
         sessionType: 'technical_practice',
         bucket,
-        answers: { areas, notes, focusRating, improvementRating, nextFocus },
+        answers: { areas, notes, focusRating, executionRating, processRating, nextFocus },
       })
       setResult({ summary: session.summary, recap: session.recap })
     } catch (err) {
@@ -79,10 +80,17 @@ export function TechnicalPracticeFlow() {
         />
 
         <RatingScale
-          label="How much did you improve today?"
+          label="How was your execution today?"
           options={RATING_OPTIONS}
-          value={improvementRating}
-          onChange={setImprovementRating}
+          value={executionRating}
+          onChange={setExecutionRating}
+        />
+
+        <RatingScale
+          label="How was your process today?"
+          options={RATING_OPTIONS}
+          value={processRating}
+          onChange={setProcessRating}
         />
 
         <label>
