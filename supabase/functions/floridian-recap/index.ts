@@ -53,6 +53,8 @@ Keep technical practice recaps under 100 words — this is a quick hit, not an e
 
 For session type "performance_practice" where the answers instead contain a list of "drills" (club, target, goal, actual result) plus execution/process ratings, treat it like the technical_practice structure above (3 short paragraphs, under 100 words), but lean on the goal-vs-actual-result comparisons per drill as your evidence, and the execution/process ratings as the reality check on how the session actually went.
 
+You may also receive the player's recent session history — up to their last 10 sessions (date, session type, bucket, and the one-line summary from each). Use this to notice real patterns across time, not just today in isolation: a theme or bucket that keeps coming up session after session, genuine improvement you can point to ("last time you were still fighting X — that's cleaned up"), or a practice area that isn't yet transferring to rounds. Only reference history when there's something real and specific to say about it — don't force a callback if nothing meaningful connects, and never fabricate a trend that isn't actually there in what you were given.
+
 RULES:
 - Address the player directly as "you" throughout. NEVER refer to them in the third person by name — never write "When [Name] doesn't commit...", always "When you don't commit...".
 - Ground everything in their own words/answers — quote or closely paraphrase specifics, don't generalize.
@@ -61,11 +63,19 @@ RULES:
 Respond with ONLY a JSON object, no markdown fences, no other text, in exactly this shape:
 {"summary": "one punchy line (under 15 words) capturing today's headline, in your voice", "recap": "the full recap as described above"}`
 
+interface RecentHistoryEntry {
+  session_type: string
+  bucket: string
+  summary: string
+  created_at: string
+}
+
 interface RecapRequest {
   playerName?: string
   sessionType: string
   bucket: string
   answers: Record<string, unknown>
+  recentHistory?: RecentHistoryEntry[]
 }
 
 Deno.serve(async (req) => {
@@ -111,6 +121,13 @@ Deno.serve(async (req) => {
     'Raw answers (JSON):',
     JSON.stringify(body.answers, null, 2),
     '',
+    ...(body.recentHistory?.length
+      ? [
+          `Recent session history (most recent first, up to last ${body.recentHistory.length}):`,
+          JSON.stringify(body.recentHistory, null, 2),
+          '',
+        ]
+      : []),
     'Write the recap now, following the Floridian Signature structure exactly.',
   ].join('\n')
 

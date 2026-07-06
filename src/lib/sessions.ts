@@ -32,6 +32,20 @@ interface SubmitSessionInput {
   answers: Record<string, unknown>
 }
 
+const RECENT_HISTORY_LIMIT = 10
+
+async function fetchRecentHistory(playerId: string) {
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('session_type, bucket, summary, created_at')
+    .eq('player_id', playerId)
+    .order('created_at', { ascending: false })
+    .limit(RECENT_HISTORY_LIMIT)
+
+  if (error) throw error
+  return data
+}
+
 export async function submitSession({
   playerId,
   playerName,
@@ -39,8 +53,10 @@ export async function submitSession({
   bucket,
   answers,
 }: SubmitSessionInput): Promise<SessionRecord> {
+  const recentHistory = await fetchRecentHistory(playerId)
+
   const { data: recapData, error: recapError } = await supabase.functions.invoke('floridian-recap', {
-    body: { playerName, sessionType, bucket, answers },
+    body: { playerName, sessionType, bucket, answers, recentHistory },
   })
   if (recapError) throw new Error(await describeFunctionsError(recapError))
 
