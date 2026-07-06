@@ -1,13 +1,12 @@
-// Supabase Edge Function: generate-recap
-// (touched to force a GitHub-integration redeploy)
+// Supabase Edge Function: floridian-recap
 //
-// Called from the client via `supabase.functions.invoke('generate-recap', ...)`
+// Called from the client via `supabase.functions.invoke('floridian-recap', ...)`
 // once a player finishes logging a session. Runs server-side so the Anthropic
 // API key never reaches the browser. Supabase's gateway verifies the caller's
 // JWT before this code runs (default `verify_jwt` behavior) — no anonymous
 // requests reach here.
 //
-// Deploy: supabase functions deploy generate-recap
+// Deploy: supabase functions deploy floridian-recap
 // Secret: supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
