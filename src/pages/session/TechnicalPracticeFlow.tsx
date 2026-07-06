@@ -63,10 +63,10 @@ export function TechnicalPracticeFlow() {
         </label>
 
         <label>
-          Describe the drill and how it went
+          What did you work on, and what are your keys from today?
           <textarea
             rows={5}
-            placeholder="e.g. working on feeling the clubface square through impact with the 7-iron — hit it better as the session went on"
+            placeholder="e.g. worked on wedge distance control with the 7-iron — key was matching backswing length to carry distance, felt more consistent as the session went on"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
