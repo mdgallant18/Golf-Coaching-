@@ -110,9 +110,13 @@ const GAME_REPORT_SAFETY_CAP = 30
 export async function generateGameReport(
   playerId: string,
   playerName: string,
-  filters: { sessionFilter?: GameReportSessionFilter; timeRange?: GameReportTimeRange } = {},
+  filters: {
+    sessionFilter?: GameReportSessionFilter
+    timeRange?: GameReportTimeRange
+    audience?: 'coach' | 'player'
+  } = {},
 ): Promise<{ summary: string; report: string }> {
-  const { sessionFilter = 'all', timeRange = 'last10' } = filters
+  const { sessionFilter = 'all', timeRange = 'last10', audience = 'coach' } = filters
 
   let query = supabase
     .from('sessions')
@@ -161,7 +165,7 @@ export async function generateGameReport(
   }))
 
   const { data, error } = await supabase.functions.invoke('floridian-recap', {
-    body: { mode: 'game_report', playerName, sessions: sessionsForReport },
+    body: { mode: 'game_report', playerName, audience, sessions: sessionsForReport },
   })
   if (error) throw new Error(await describeFunctionsError(error))
 

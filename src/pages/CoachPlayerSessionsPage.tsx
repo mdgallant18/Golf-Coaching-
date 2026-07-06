@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   fetchPlayerSessions,
@@ -9,7 +9,10 @@ import {
 } from '../lib/sessions'
 import { BUCKET_LABELS, SESSION_TYPE_LABELS } from '../types/domain'
 import type { SessionRecord } from '../types/domain'
-import { renderReportMarkdown, toPlainText } from '../lib/reportFormat'
+import { renderReportMarkdown } from '../lib/reportFormat'
+import { shareNodeAsImage } from '../lib/exportReport'
+
+type ReportResult = { summary: string; report: string }
 
 export function CoachPlayerSessionsPage() {
   const { playerId } = useParams<{ playerId: string }>()
@@ -22,8 +25,14 @@ export function CoachPlayerSessionsPage() {
   const [timeRange, setTimeRange] = useState<GameReportTimeRange>('last10')
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError] = useState<string | null>(null)
-  const [report, setReport] = useState<{ summary: string; report: string } | null>(null)
-  const [shareCopied, setShareCopied] = useState(false)
+
+  const [view, setView] = useState<'coach' | 'player'>('coach')
+  const [coachReport, setCoachReport] = useState<ReportResult | null>(null)
+  const [playerReport, setPlayerReport] = useState<ReportResult | null>(null)
+  const [playerReportLoading, setPlayerReportLoading] = useState(false)
+
+  const [shareStatus, setShareStatus] = useState<'idle' | 'saved'>('idle')
+  const reportDocRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!playerId) return
@@ -41,7 +50,9 @@ export function CoachPlayerSessionsPage() {
     setReportError(null)
     try {
       const result = await generateGameReport(playerId, playerName, { sessionFilter, timeRange })
-      setReport(result)
+      setCoachReport(result)
+      setPlayerReport(null)
+      setView('coach')
     } catch (err) {
       setReportError(err instanceof Error ? err.message : 'Could not generate the game report.')
     } finally {
@@ -49,20 +60,43 @@ export function CoachPlayerSessionsPage() {
     }
   }
 
+  const handleShowPlayerView = async () => {
+    if (playerReport || !playerId) {
+      setView('player')
+      return
+    }
+    setPlayerReportLoading(true)
+    setReportError(null)
+    try {
+      const result = await generateGameReport(playerId, playerName, {
+        sessionFilter,
+        timeRange,
+        audience: 'player',
+      })
+      setPlayerReport(result)
+      setView('player')
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : 'Could not generate the player version.')
+    } finally {
+      setPlayerReportLoading(false)
+    }
+  }
+
+  const activeReport = view === 'coach' ? coachReport : playerReport
+
   const handleShare = async () => {
-    if (!report) return
-    const text = `${report.summary}\n\n${toPlainText(report.report)}`
+    if (!activeReport || !reportDocRef.current) return
+    const filename = `${playerName.replace(/\s+/g, '-').toLowerCase()}-report.png`
     const title = `${playerName} — Game Report`
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text })
-      } catch {
-        // user cancelled the share sheet — nothing to do
+    try {
+      const result = await shareNodeAsImage(reportDocRef.current, filename, title, activeReport.summary)
+      if (result === 'downloaded') {
+        setShareStatus('saved')
+        setTimeout(() => setShareStatus('idle'), 2000)
       }
-    } else {
-      await navigator.clipboard.writeText(text)
-      setShareCopied(true)
-      setTimeout(() => setShareCopied(false), 2000)
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
+      setReportError('Could not create a shareable image of the report.')
     }
   }
 
@@ -120,30 +154,58 @@ export function CoachPlayerSessionsPage() {
 
       {reportError && <p className="form-error">{reportError}</p>}
 
-      {report && (
-        <div className="recap-card report-document" style={{ marginBottom: 24 }}>
-          <div className="report-letterhead">
-            <p className="report-letterhead-brand">Golf Coaching — Player Progress Report</p>
-            <h2 className="report-letterhead-player">{playerName}</h2>
-            <p className="report-letterhead-meta">
-              Prepared by Matt Gallant · {new Date().toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          </div>
-          <h2 className="report-headline">{report.summary}</h2>
-          {renderReportMarkdown(report.report)}
-          <div className="report-actions">
-            <button type="button" className="primary-button" onClick={handleSaveAsPdf}>
-              Save as PDF
+      {coachReport && (
+        <>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button
+              type="button"
+              className={view === 'coach' ? 'primary-button' : 'secondary-button'}
+              style={{ flex: 1 }}
+              onClick={() => setView('coach')}
+            >
+              Coach view
             </button>
-            <button type="button" className="secondary-button" onClick={handleShare}>
-              {shareCopied ? 'Copied!' : 'Quick share'}
+            <button
+              type="button"
+              className={view === 'player' ? 'primary-button' : 'secondary-button'}
+              style={{ flex: 1 }}
+              disabled={playerReportLoading}
+              onClick={handleShowPlayerView}
+            >
+              {playerReportLoading ? 'Generating…' : 'Player view'}
             </button>
           </div>
-        </div>
+
+          {activeReport && (
+            <div className="recap-card report-document" style={{ marginBottom: 24 }} ref={reportDocRef}>
+              <div className="report-letterhead">
+                <p className="report-letterhead-brand">
+                  Golf Coaching — {view === 'coach' ? 'Player Progress Report' : 'Player Check-in'}
+                </p>
+                <h2 className="report-letterhead-player">{playerName}</h2>
+                <p className="report-letterhead-meta">
+                  Prepared by Matt Gallant · {new Date().toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+              </div>
+              <h2 className="report-headline">{activeReport.summary}</h2>
+              {view === 'coach'
+                ? renderReportMarkdown(activeReport.report)
+                : activeReport.report.split('\n\n').map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+              <div className="report-actions">
+                <button type="button" className="primary-button" onClick={handleSaveAsPdf}>
+                  Save as PDF
+                </button>
+                <button type="button" className="secondary-button" onClick={handleShare}>
+                  {shareStatus === 'saved' ? 'Saved!' : 'Quick share'}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <ul className="session-list">

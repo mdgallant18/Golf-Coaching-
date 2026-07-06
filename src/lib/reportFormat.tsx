@@ -1,7 +1,3 @@
-export function toPlainText(markdown: string) {
-  return markdown.replace(/^##\s+/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')
-}
-
 function renderBold(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return parts.map((part, i) =>
