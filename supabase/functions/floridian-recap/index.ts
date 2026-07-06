@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 2500,
+      max_tokens: 4096,
       system,
       messages: [{ role: 'user', content: userMessage }],
     }),
