@@ -389,6 +389,7 @@ textarea {
 
 .wrapup-form textarea,
 .wrapup-form input[type='text'],
+.wrapup-form input[type='number'],
 .wrapup-form select {
   border: 1px solid var(--color-border);
   border-radius: 10px;
