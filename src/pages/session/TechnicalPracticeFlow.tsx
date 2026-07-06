@@ -10,7 +10,6 @@ export function TechnicalPracticeFlow() {
   const { profile } = useAuth()
   const navigate = useNavigate()
 
-  const [why, setWhy] = useState('')
   const [areas, setAreas] = useState<string[]>([])
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -34,7 +33,7 @@ export function TechnicalPracticeFlow() {
         playerName: profile.full_name,
         sessionType: 'technical_practice',
         bucket,
-        answers: { why, areas, description },
+        answers: { areas, description },
       })
       setResult({ summary: session.summary, recap: session.recap })
     } catch (err) {
@@ -59,25 +58,15 @@ export function TechnicalPracticeFlow() {
 
       <div className="wrapup-form">
         <label>
-          Why are you working on this?
-          <textarea
-            rows={2}
-            placeholder="e.g. missed too many greens last round because of inconsistent wedge distances"
-            value={why}
-            onChange={(e) => setWhy(e.target.value)}
-          />
-        </label>
-
-        <label>
           Areas worked on
           <MultiSelectChips options={PRACTICE_AREAS} selected={areas} onToggle={toggleArea} />
         </label>
 
         <label>
-          What did you work on, and what are your keys from today?
+          What did you work on, why, and what are your keys from today?
           <textarea
-            rows={5}
-            placeholder="e.g. worked on wedge distance control with the 7-iron — key was matching backswing length to carry distance, felt more consistent as the session went on"
+            rows={6}
+            placeholder="e.g. missed too many greens last round from inconsistent wedge distances, so worked on matching backswing length to carry distance with the 7-iron — key was staying in rhythm, felt more consistent as the session went on"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
