@@ -190,7 +190,13 @@ Deno.serve(async (req) => {
   let system: string
   let userMessage: string
 
-  if ('mode' in rawBody && rawBody.mode === 'game_report') {
+  // Detect the request kind structurally rather than only trusting the
+  // "mode" string — a game report is the only shape with a "sessions"
+  // array, which is far harder to accidentally break than a string match.
+  const hasSessionsArray = Array.isArray((rawBody as GameReportRequest).sessions)
+  const isCoachSession = (rawBody as CoachSessionRequest).mode === 'coach_session'
+
+  if (hasSessionsArray) {
     const body = rawBody as GameReportRequest
     if (!body.playerName || !body.sessions) {
       return new Response(
@@ -206,7 +212,7 @@ Deno.serve(async (req) => {
       '',
       'Write the game report now, following the structure exactly.',
     ].join('\n')
-  } else if ('mode' in rawBody && rawBody.mode === 'coach_session') {
+  } else if (isCoachSession) {
     const body = rawBody as CoachSessionRequest
     if (!body.playerName || !body.sessionType || !body.bucket || !body.answers) {
       return new Response(
