@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { RatingScale } from '../../components/RatingScale'
 import { RecapResult } from '../../components/RecapResult'
+import { RATING_OPTIONS } from '../../data/technicalPractice'
 import { submitSession } from '../../lib/sessions'
 import { BUCKET_LABELS } from '../../types/domain'
 import type { Bucket } from '../../types/domain'
@@ -26,6 +28,8 @@ export function DrillLoggerFlow() {
 
   const [bucket, setBucket] = useState<Bucket | undefined>()
   const [drills, setDrills] = useState<Drill[]>([emptyDrill()])
+  const [executionRating, setExecutionRating] = useState<string>()
+  const [processRating, setProcessRating] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<{ summary: string; recap: string } | null>(null)
@@ -39,7 +43,10 @@ export function DrillLoggerFlow() {
   }
 
   const canSubmit =
-    !!bucket && drills.every((d) => d.club.trim() && d.goal.trim() && d.result.trim())
+    !!bucket &&
+    drills.every((d) => d.club.trim() && d.goal.trim() && d.result.trim()) &&
+    !!executionRating &&
+    !!processRating
 
   const handleSubmit = async () => {
     if (!profile || !bucket || !canSubmit) return
@@ -53,6 +60,8 @@ export function DrillLoggerFlow() {
         bucket,
         answers: {
           drills: drills.map(({ club, target, goal, result }) => ({ club, target, goal, result })),
+          executionRating,
+          processRating,
         },
       })
       setResult({ summary: session.summary, recap: session.recap })
@@ -143,6 +152,20 @@ export function DrillLoggerFlow() {
         <button type="button" className="text-button" onClick={() => setDrills((prev) => [...prev, emptyDrill()])}>
           + Add another drill
         </button>
+
+        <RatingScale
+          label="How was your execution today?"
+          options={RATING_OPTIONS}
+          value={executionRating}
+          onChange={setExecutionRating}
+        />
+
+        <RatingScale
+          label="How was your process today?"
+          options={RATING_OPTIONS}
+          value={processRating}
+          onChange={setProcessRating}
+        />
 
         {error && <p className="form-error">{error}</p>}
 
