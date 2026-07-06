@@ -85,13 +85,3 @@ export const ROUND_QUESTIONS: RoundQuestion[] = [
     ],
   },
 ]
-
-export const MENTAL_SCORECARD_OPTIONS = [
-  'Very poor',
-  'Poor',
-  'Okay',
-  'Good',
-  'Very good',
-] as const
-
-export type MentalScorecardRating = (typeof MENTAL_SCORECARD_OPTIONS)[number]
