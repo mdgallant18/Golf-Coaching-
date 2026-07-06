@@ -6,6 +6,7 @@ import { SignupPage } from './pages/SignupPage'
 import { CompleteProfilePage } from './pages/CompleteProfilePage'
 import { PlayerHomePage } from './pages/PlayerHomePage'
 import { CoachHomePage } from './pages/CoachHomePage'
+import { SessionDetailPage } from './pages/SessionDetailPage'
 import { NewSessionPage } from './pages/session/NewSessionPage'
 import { RoundSessionFlow } from './pages/session/RoundSessionFlow'
 import { TechnicalPracticeFlow } from './pages/session/TechnicalPracticeFlow'
@@ -88,6 +89,14 @@ function AppRoutes() {
           <RequireProfile role="player">
             <DrillLoggerFlow />
           </RequireProfile>
+        }
+      />
+      <Route
+        path="/sessions/:sessionId"
+        element={
+          <RequireSession>
+            <SessionDetailPage />
+          </RequireSession>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

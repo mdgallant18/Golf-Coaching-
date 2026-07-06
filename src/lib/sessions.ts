@@ -64,6 +64,17 @@ export async function submitSession({
   return data
 }
 
+export async function fetchSessionById(sessionId: string): Promise<SessionRecord> {
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('id', sessionId)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function fetchPlayerSessions(playerId: string): Promise<SessionRecord[]> {
   const { data, error } = await supabase
     .from('sessions')

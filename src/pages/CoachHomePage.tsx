@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { fetchCoachRoster } from '../lib/sessions'
 import { BUCKET_LABELS } from '../types/domain'
@@ -11,6 +12,7 @@ interface RosterPlayer {
 
 export function CoachHomePage() {
   const { profile, signOut } = useAuth()
+  const navigate = useNavigate()
   const [players, setPlayers] = useState<RosterPlayer[]>([])
   const [sessions, setSessions] = useState<SessionRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,7 +74,11 @@ export function CoachHomePage() {
                 </span>
               </div>
               {latest ? (
-                <div className="session-list-item">
+                <button
+                  type="button"
+                  className="session-list-item session-list-item-button"
+                  onClick={() => navigate(`/sessions/${latest.id}`)}
+                >
                   <div className="session-list-item-header">
                     <span className="bucket-tag">{BUCKET_LABELS[latest.bucket]}</span>
                     <span className="session-date">
@@ -80,7 +86,7 @@ export function CoachHomePage() {
                     </span>
                   </div>
                   <p className="session-summary">{latest.summary}</p>
-                </div>
+                </button>
               ) : (
                 <p>No sessions logged yet.</p>
               )}

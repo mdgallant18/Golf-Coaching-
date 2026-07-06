@@ -51,15 +51,21 @@ export function PlayerHomePage() {
         )}
         <ul className="session-list">
           {sessions.map((session) => (
-            <li key={session.id} className="session-list-item">
-              <div className="session-list-item-header">
-                <span className="bucket-tag">{BUCKET_LABELS[session.bucket]}</span>
-                <span className="session-date">
-                  {new Date(session.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="session-type-label">{SESSION_TYPE_LABELS[session.session_type]}</p>
-              <p className="session-summary">{session.summary}</p>
+            <li key={session.id}>
+              <button
+                type="button"
+                className="session-list-item session-list-item-button"
+                onClick={() => navigate(`/sessions/${session.id}`)}
+              >
+                <div className="session-list-item-header">
+                  <span className="bucket-tag">{BUCKET_LABELS[session.bucket]}</span>
+                  <span className="session-date">
+                    {new Date(session.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="session-type-label">{SESSION_TYPE_LABELS[session.session_type]}</p>
+                <p className="session-summary">{session.summary}</p>
+              </button>
             </li>
           ))}
         </ul>

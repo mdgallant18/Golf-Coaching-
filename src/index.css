@@ -458,6 +458,15 @@ textarea {
   padding: 16px;
 }
 
+.session-list-item-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .session-list-item-header {
   display: flex;
   justify-content: space-between;
