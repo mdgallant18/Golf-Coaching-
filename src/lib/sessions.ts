@@ -102,24 +102,66 @@ export async function fetchPlayerSessions(playerId: string): Promise<SessionReco
   return data
 }
 
+export type GameReportSessionFilter = 'all' | 'round_tournament' | 'technical_practice' | 'performance_practice'
+export type GameReportTimeRange = 'last10' | 'last30days' | 'last90days' | 'alltime'
+
+const GAME_REPORT_SAFETY_CAP = 30
+
 export async function generateGameReport(
   playerId: string,
   playerName: string,
+  filters: { sessionFilter?: GameReportSessionFilter; timeRange?: GameReportTimeRange } = {},
 ): Promise<{ summary: string; report: string }> {
-  const { data: sessions, error: sessionsError } = await supabase
+  const { sessionFilter = 'all', timeRange = 'last10' } = filters
+
+  let query = supabase
     .from('sessions')
-    .select('session_type, bucket, summary, recap, created_at')
+    .select('session_type, bucket, summary, recap, answers, created_at')
     .eq('player_id', playerId)
     .order('created_at', { ascending: false })
-    .limit(RECENT_HISTORY_LIMIT)
+
+  if (sessionFilter === 'round_tournament') {
+    query = query.in('session_type', ['round', 'tournament'])
+  } else if (sessionFilter === 'technical_practice') {
+    query = query.eq('session_type', 'technical_practice')
+  } else if (sessionFilter === 'performance_practice') {
+    query = query.eq('session_type', 'performance_practice')
+  }
+
+  if (timeRange === 'last10') {
+    query = query.limit(RECENT_HISTORY_LIMIT)
+  } else {
+    if (timeRange === 'last30days' || timeRange === 'last90days') {
+      const days = timeRange === 'last30days' ? 30 : 90
+      const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+      query = query.gte('created_at', cutoff)
+    }
+    // Safety cap regardless of range so a long-tenured player's "all time"
+    // report doesn't balloon the prompt — most recent N within the range.
+    query = query.limit(GAME_REPORT_SAFETY_CAP)
+  }
+
+  const { data: sessions, error: sessionsError } = await query
 
   if (sessionsError) throw sessionsError
   if (!sessions || sessions.length === 0) {
-    throw new Error('No sessions logged yet for this player.')
+    throw new Error('No sessions match that filter for this player.')
   }
 
+  // Only forward the numeric stats sub-object per session (score, 3-putts,
+  // penalties, etc.), not the full raw question/answer payload — keeps the
+  // report prompt focused on real numbers without a huge transcript dump.
+  const sessionsForReport = sessions.map((s) => ({
+    session_type: s.session_type,
+    bucket: s.bucket,
+    summary: s.summary,
+    recap: s.recap,
+    created_at: s.created_at,
+    stats: (s.answers as Record<string, unknown> | null)?.stats ?? undefined,
+  }))
+
   const { data, error } = await supabase.functions.invoke('floridian-recap', {
-    body: { mode: 'game_report', playerName, sessions },
+    body: { mode: 'game_report', playerName, sessions: sessionsForReport },
   })
   if (error) throw new Error(await describeFunctionsError(error))
 
