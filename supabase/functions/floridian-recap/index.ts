@@ -115,7 +115,10 @@ Deno.serve(async (req) => {
   }
 
   const data = await response.json()
-  const rawText: string = data.content?.[0]?.text ?? ''
+  // Claude may emit a leading "thinking" block before the actual text block —
+  // find the text block rather than assuming it's content[0].
+  const textBlock = data.content?.find((block: { type: string }) => block.type === 'text')
+  const rawText: string = textBlock?.text ?? ''
   const cleaned = rawText.trim().replace(/^```(json)?/, '').replace(/```$/, '').trim()
 
   let summary = ''
