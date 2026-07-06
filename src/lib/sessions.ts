@@ -3,15 +3,25 @@ import { supabase } from './supabase'
 import type { Bucket, SessionRecord, SessionType } from '../types/domain'
 
 async function describeFunctionsError(error: unknown): Promise<string> {
-  if (error instanceof FunctionsHttpError) {
+  if (error instanceof FunctionsHttpError && error.context instanceof Response) {
+    const status = error.context.status
+    let raw = ''
     try {
-      const body = await error.context.json()
-      if (body?.error) return body.detail ? `${body.error}: ${body.detail}` : body.error
-    } catch {
-      // fall through to generic message below
+      raw = await error.context.text()
+    } catch (readErr) {
+      return `Recap function returned status ${status}, and its response body couldn't be read (${readErr instanceof Error ? readErr.message : readErr}).`
     }
+    try {
+      const body = JSON.parse(raw)
+      if (body?.error) {
+        return body.detail ? `Recap failed: ${body.error} — ${body.detail}` : `Recap failed: ${body.error}`
+      }
+    } catch {
+      // raw wasn't JSON — fall through and show it verbatim below
+    }
+    return `Recap function returned status ${status}: ${raw.slice(0, 300) || '(empty body)'}`
   }
-  return error instanceof Error ? error.message : 'Could not generate your recap.'
+  return `Could not reach the recap function (${error instanceof Error ? error.message : String(error)}).`
 }
 
 interface SubmitSessionInput {
