@@ -14,12 +14,12 @@ const ROUND_LIKE_TYPES: SessionType[] = ['round', 'tournament', 'performance_pra
 
 interface RoundStats {
   score: string
-  fairwaysHit: string
-  greensInRegulation: string
-  putts: string
+  threePutts: string
+  penaltyStrokes: string
+  doublesOrWorse: string
 }
 
-const EMPTY_STATS: RoundStats = { score: '', fairwaysHit: '', greensInRegulation: '', putts: '' }
+const EMPTY_STATS: RoundStats = { score: '', threePutts: '', penaltyStrokes: '', doublesOrWorse: '' }
 
 export function RoundSessionFlow() {
   const { sessionType: sessionTypeParam } = useParams<{ sessionType: string }>()
@@ -120,30 +120,30 @@ export function RoundSessionFlow() {
             />
           </label>
           <label>
-            Fairways hit (out of 14)
+            3-putts
             <input
               type="number"
               inputMode="numeric"
-              value={stats.fairwaysHit}
-              onChange={(e) => setStats((s) => ({ ...s, fairwaysHit: e.target.value }))}
+              value={stats.threePutts}
+              onChange={(e) => setStats((s) => ({ ...s, threePutts: e.target.value }))}
             />
           </label>
           <label>
-            Greens in regulation (out of 18)
+            Penalty strokes (OB, water, unplayable, etc.)
             <input
               type="number"
               inputMode="numeric"
-              value={stats.greensInRegulation}
-              onChange={(e) => setStats((s) => ({ ...s, greensInRegulation: e.target.value }))}
+              value={stats.penaltyStrokes}
+              onChange={(e) => setStats((s) => ({ ...s, penaltyStrokes: e.target.value }))}
             />
           </label>
           <label>
-            Putts (total)
+            Holes double bogey or worse
             <input
               type="number"
               inputMode="numeric"
-              value={stats.putts}
-              onChange={(e) => setStats((s) => ({ ...s, putts: e.target.value }))}
+              value={stats.doublesOrWorse}
+              onChange={(e) => setStats((s) => ({ ...s, doublesOrWorse: e.target.value }))}
             />
           </label>
         </div>
