@@ -8,13 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.png'],
       manifest: {
-        name: 'Golf Coaching',
-        short_name: 'Golf Coach',
+        name: 'Matt Gallant Golf Coaching',
+        short_name: 'MG Golf',
         description: 'Post-round and post-practice reflections with AI coaching recaps.',
         theme_color: '#1b4332',
-        background_color: '#0b1f17',
+        background_color: '#0c0d11',
         display: 'standalone',
         start_url: '/',
         icons: [
