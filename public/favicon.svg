@@ -1,8 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="pennant-clip">
+      <path d="M264 118 L410 176 L264 234 Z"/>
+    </clipPath>
+  </defs>
   <rect width="512" height="512" fill="#1b4332"/>
   <ellipse cx="256" cy="392" rx="118" ry="26" fill="#123626"/>
   <ellipse cx="256" cy="386" rx="100" ry="20" fill="#f6f3ea"/>
   <circle cx="352" cy="378" r="15" fill="#f6f3ea"/>
   <rect x="248" y="120" width="16" height="266" rx="8" fill="#f6f3ea"/>
-  <path d="M264 128 L388 178 L264 224 Z" fill="#e0a458"/>
+  <path d="M264 118 L410 176 L264 234 Z" fill="#e0a458"/>
+  <text
+    x="271"
+    y="190"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-weight="700"
+    font-size="46"
+    fill="#1b4332"
+    letter-spacing="-2"
+    clip-path="url(#pennant-clip)"
+  >MG</text>
 </svg>
