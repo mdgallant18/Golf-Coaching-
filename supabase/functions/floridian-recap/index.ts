@@ -6,7 +6,7 @@
 // JWT before this code runs (default `verify_jwt` behavior) — no anonymous
 // requests reach here.
 //
-// Deploy: supabase functions deploy floridian-recap
+// Deploy: automatic via .github/workflows/deploy-functions.yml on push
 // Secret: supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
