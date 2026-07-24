@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { fetchProfileName, fetchSessionById, generateCoachSessionReport } from '../lib/sessions'
+import {
+  deleteSession,
+  fetchProfileName,
+  fetchSessionById,
+  generateCoachSessionReport,
+} from '../lib/sessions'
 import { renderReportMarkdown } from '../lib/reportFormat'
 import { BUCKET_LABELS, SESSION_TYPE_LABELS } from '../types/domain'
 import type { SessionRecord } from '../types/domain'
@@ -17,6 +22,10 @@ export function SessionDetailPage() {
   const [coachReport, setCoachReport] = useState<{ summary: string; report: string } | null>(null)
   const [coachLoading, setCoachLoading] = useState(false)
   const [coachError, setCoachError] = useState<string | null>(null)
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionId) return
@@ -40,6 +49,21 @@ export function SessionDetailPage() {
       setCoachError(err instanceof Error ? err.message : "Could not generate the coach's take.")
     } finally {
       setCoachLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!session) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await deleteSession(session.id)
+      navigate(isCoachViewingPlayer ? `/coach/players/${session.player_id}` : '/player', {
+        replace: true,
+      })
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Could not delete this session.')
+      setDeleting(false)
     }
   }
 
@@ -106,6 +130,46 @@ export function SessionDetailPage() {
             {view === 'coach' && coachReport
               ? renderReportMarkdown(coachReport.report)
               : session.recap.split('\n\n').map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            {!confirmingDelete && (
+              <button
+                type="button"
+                className="danger-text-button"
+                onClick={() => setConfirmingDelete(true)}
+              >
+                Delete session
+              </button>
+            )}
+            {confirmingDelete && (
+              <div className="wrapup-form">
+                <p className="form-error" style={{ margin: 0 }}>
+                  Delete this session for good? This can't be undone.
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="danger-button"
+                    style={{ flex: 1 }}
+                    disabled={deleting}
+                    onClick={handleDelete}
+                  >
+                    {deleting ? 'Deleting…' : 'Yes, delete it'}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    style={{ flex: 1 }}
+                    disabled={deleting}
+                    onClick={() => setConfirmingDelete(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {deleteError && <p className="form-error">{deleteError}</p>}
+              </div>
+            )}
           </div>
         </>
       )}

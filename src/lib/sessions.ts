@@ -91,6 +91,11 @@ export async function fetchSessionById(sessionId: string): Promise<SessionRecord
   return data
 }
 
+export async function deleteSession(sessionId: string): Promise<void> {
+  const { error } = await supabase.from('sessions').delete().eq('id', sessionId)
+  if (error) throw error
+}
+
 export async function fetchPlayerSessions(playerId: string): Promise<SessionRecord[]> {
   const { data, error } = await supabase
     .from('sessions')
