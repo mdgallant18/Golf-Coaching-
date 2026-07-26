@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
+  deleteAllSessions,
   fetchPlayerSessions,
   fetchProfileName,
   generateGameReport,
@@ -11,6 +12,7 @@ import { BUCKET_LABELS, SESSION_TYPE_LABELS } from '../types/domain'
 import type { SessionRecord } from '../types/domain'
 import { renderReportMarkdown } from '../lib/reportFormat'
 import { shareNodeAsImage } from '../lib/exportReport'
+import { DeleteAllSessionsButton } from '../components/DeleteAllSessionsButton'
 
 type ReportResult = { summary: string; report: string }
 
@@ -228,6 +230,21 @@ export function CoachPlayerSessionsPage() {
           </li>
         ))}
       </ul>
+
+      {!loading && (
+        <div style={{ marginTop: 16 }}>
+          <DeleteAllSessionsButton
+            count={sessions.length}
+            onConfirm={async () => {
+              if (!playerId) return
+              await deleteAllSessions(playerId)
+              setSessions([])
+              setCoachReport(null)
+              setPlayerReport(null)
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

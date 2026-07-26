@@ -92,8 +92,23 @@ export async function fetchSessionById(sessionId: string): Promise<SessionRecord
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
-  const { error } = await supabase.from('sessions').delete().eq('id', sessionId)
+  const { data, error } = await supabase.from('sessions').delete().eq('id', sessionId).select('id')
   if (error) throw error
+  if (!data || data.length === 0) {
+    throw new Error(
+      "Nothing was deleted — you may not have permission, or the database delete policies haven't been applied yet.",
+    )
+  }
+}
+
+export async function deleteAllSessions(playerId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('sessions')
+    .delete()
+    .eq('player_id', playerId)
+    .select('id')
+  if (error) throw error
+  return data?.length ?? 0
 }
 
 export async function fetchPlayerSessions(playerId: string): Promise<SessionRecord[]> {

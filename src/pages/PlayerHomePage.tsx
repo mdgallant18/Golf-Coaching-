@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { fetchPlayerSessions } from '../lib/sessions'
+import { deleteAllSessions, fetchPlayerSessions } from '../lib/sessions'
 import { computeTrendBlurb } from '../lib/trends'
 import { BUCKET_LABELS, SESSION_TYPE_LABELS } from '../types/domain'
 import type { SessionRecord } from '../types/domain'
+import { DeleteAllSessionsButton } from '../components/DeleteAllSessionsButton'
 
 export function PlayerHomePage() {
   const { profile, signOut } = useAuth()
@@ -69,6 +70,18 @@ export function PlayerHomePage() {
             </li>
           ))}
         </ul>
+        {!loading && (
+          <div style={{ marginTop: 16 }}>
+            <DeleteAllSessionsButton
+              count={sessions.length}
+              onConfirm={async () => {
+                if (!profile) return
+                await deleteAllSessions(profile.id)
+                setSessions([])
+              }}
+            />
+          </div>
+        )}
       </section>
     </div>
   )
